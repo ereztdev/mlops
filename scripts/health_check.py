@@ -16,6 +16,14 @@ def check_directory_structure() -> bool:
     """Verify that all required directories exist."""
     print("Checking directory structure...")
     
+    # Get the project root directory (parent of scripts/)
+    # This script is in scripts/, so go up one level to find project root
+    # This ensures the check works regardless of where the script is run from
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    
+    # Only check directories needed for application runtime
+    # Note: docs/ is excluded from Docker builds (not needed in container)
     required_dirs = [
         "src",
         "src/data",
@@ -23,12 +31,14 @@ def check_directory_structure() -> bool:
         "src/training",
         "src/inference",
         "tests",
-        "docs",
+        # "docs",  # Excluded - not needed in container, only in repo
     ]
     
     all_exist = True
     for dir_path in required_dirs:
-        path = Path(dir_path)
+        # Check relative to project root
+        # This works whether run from project root, scripts/, or inside Docker
+        path = project_root / dir_path
         if path.exists() and path.is_dir():
             print(f"  ✓ {dir_path}/")
         else:
