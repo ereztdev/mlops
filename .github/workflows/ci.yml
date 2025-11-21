@@ -97,8 +97,8 @@ jobs:
       run: |
         python src/training/train.py
     
-    # Upload model artifacts and metrics
-    # This saves the trained model files and metrics so they can be downloaded later
+    # Upload model artifacts, metrics, and MLflow tracking data
+    # This saves the trained model files, metrics, and experiment history
     # Artifacts are stored for 7 days
     - name: Upload model artifacts
       uses: actions/upload-artifact@v4
@@ -107,6 +107,7 @@ jobs:
         path: |
           models/*.pkl
           models/metrics.json
+          mlruns/
         retention-days: 7
         if-no-files-found: warn
 

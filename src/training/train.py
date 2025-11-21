@@ -12,6 +12,8 @@ import sys
 from pathlib import Path
 from typing import Tuple
 
+import mlflow
+import mlflow.sklearn
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
@@ -236,40 +238,103 @@ def main() -> None:
     2. Train the model
     3. Evaluate performance
     4. Save the trained artifacts
+    5. Register model in MLflow
     """
+    # Set MLflow tracking URI (local by default)
+    # When expanding to a more robust production grade, this could point to
+    # a remote MLflow server for centralized tracking
+    project_root = Path(__file__).parent.parent.parent
+    mlflow_tracking_uri = project_root / "mlruns"
+    mlflow.set_tracking_uri(str(mlflow_tracking_uri))
+    
+    # Set experiment name
+    # MLflow organizes runs into experiments
+    mlflow.set_experiment("sentiment-analysis")
+    
     print("=" * 50)
     print("Sentiment Analysis Model Training")
     print("=" * 50)
+    print(f"\nMLflow tracking URI: {mlflow_tracking_uri}")
     
-    # Step 1: Load data
-    print("\n[Step 1] Loading data...")
-    X, y, vectorizer = load_sentiment_data()
-    get_data_info(X, y)
-    
-    # Step 2: Train model
-    print("\n[Step 2] Training model...")
-    model, X_test, y_test = train_model(X, y)
-    
-    # Step 3: Evaluate model
-    print("\n[Step 3] Evaluating model...")
-    metrics = evaluate_model(model, X_test, y_test)
-    
-    # Step 4: Save model and metrics
-    print("\n[Step 4] Saving artifacts...")
-    # Create models directory in project root
-    project_root = Path(__file__).parent.parent.parent
-    model_dir = project_root / "models"
-    model_path, vectorizer_path = save_model(model, vectorizer, model_dir)
-    metrics_path = save_metrics(metrics, model_dir)
-    
-    print("\n" + "=" * 50)
-    print("Training pipeline complete!")
-    print("=" * 50)
-    print(f"\nModel artifacts saved:")
-    print(f"  - Model: {model_path}")
-    print(f"  - Vectorizer: {vectorizer_path}")
-    print(f"  - Metrics: {metrics_path}")
-    print(f"\nModel accuracy: {metrics['accuracy']:.4f} ({metrics['accuracy'] * 100:.2f}%)")
+    # Start MLflow run
+    # This creates a new experiment run that tracks all parameters, metrics, and artifacts
+    with mlflow.start_run():
+        # Step 1: Load data
+        print("\n[Step 1] Loading data...")
+        X, y, vectorizer = load_sentiment_data()
+        get_data_info(X, y)
+        
+        # Log dataset information as parameters
+        mlflow.log_param("dataset_size", X.shape[0])
+        mlflow.log_param("num_features", X.shape[1])
+        mlflow.log_param("num_classes", len(np.unique(y)))
+        
+        # Step 2: Train model
+        print("\n[Step 2] Training model...")
+        test_size = 0.2
+        random_state = 42
+        model, X_test, y_test = train_model(X, y, test_size=test_size, random_state=random_state)
+        
+        # Log training parameters
+        mlflow.log_param("model_type", "MultinomialNB")
+        mlflow.log_param("test_size", test_size)
+        mlflow.log_param("random_state", random_state)
+        mlflow.log_param("train_samples", X.shape[0] - X_test.shape[0])
+        mlflow.log_param("test_samples", X_test.shape[0])
+        
+        # Step 3: Evaluate model
+        print("\n[Step 3] Evaluating model...")
+        metrics = evaluate_model(model, X_test, y_test)
+        
+        # Log metrics to MLflow
+        mlflow.log_metric("accuracy", metrics["accuracy"])
+        
+        # Log per-class metrics from classification report
+        report = metrics["classification_report"]
+        for class_name in ["negative", "neutral", "positive"]:
+            if class_name in report:
+                mlflow.log_metric(f"{class_name}_precision", report[class_name]["precision"])
+                mlflow.log_metric(f"{class_name}_recall", report[class_name]["recall"])
+                mlflow.log_metric(f"{class_name}_f1_score", report[class_name]["f1-score"])
+        
+        # Step 4: Save model and metrics locally
+        print("\n[Step 4] Saving artifacts...")
+        model_dir = project_root / "models"
+        model_path, vectorizer_path = save_model(model, vectorizer, model_dir)
+        metrics_path = save_metrics(metrics, model_dir)
+        
+        # Log model to MLflow
+        # MLflow can automatically log scikit-learn models
+        # We also log the vectorizer as an artifact since it's needed for inference
+        mlflow.sklearn.log_model(
+            model,
+            "model",
+            registered_model_name="SentimentAnalysisModel"
+        )
+        
+        # Log vectorizer as artifact
+        mlflow.log_artifact(str(vectorizer_path), "vectorizer")
+        
+        # Log metrics JSON as artifact
+        mlflow.log_artifact(str(metrics_path), "metrics")
+        
+        # Log confusion matrix as artifact (save as JSON for MLflow)
+        cm_path = model_dir / "confusion_matrix.json"
+        with open(cm_path, "w") as f:
+            json.dump({"confusion_matrix": metrics["confusion_matrix"]}, f, indent=2)
+        mlflow.log_artifact(str(cm_path), "metrics")
+        
+        print("\n" + "=" * 50)
+        print("Training pipeline complete!")
+        print("=" * 50)
+        print(f"\nModel artifacts saved:")
+        print(f"  - Model: {model_path}")
+        print(f"  - Vectorizer: {vectorizer_path}")
+        print(f"  - Metrics: {metrics_path}")
+        print(f"\nMLflow run ID: {mlflow.active_run().info.run_id}")
+        print(f"MLflow tracking URI: {mlflow.get_tracking_uri()}")
+        print(f"\nModel accuracy: {metrics['accuracy']:.4f} ({metrics['accuracy'] * 100:.2f}%)")
+        print("\nView MLflow UI: mlflow ui --backend-store-uri mlruns")
 
 
 if __name__ == "__main__":

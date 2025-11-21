@@ -83,13 +83,44 @@ Artifact handling includes:
 
 ## Stage 4: Model Registry
 
-**Status**: To be implemented
+**Status**: ✅ Implemented
 
 The model registry provides:
-- Model versioning
-- Experiment tracking
-- Model metadata
-- Artifact storage
+- **Model versioning**: Models registered in MLflow with automatic versioning
+- **Experiment tracking**: All training runs tracked with parameters and metrics
+- **Model metadata**: Training parameters, dataset info, and configuration stored
+- **Artifact storage**: Models, vectorizers, and metrics stored in MLflow
+
+**Implementation Details:**
+- Uses MLflow for experiment tracking and model registry
+- Local tracking URI: `mlruns/` directory
+- Experiment: `sentiment-analysis`
+- Registered model: `SentimentAnalysisModel`
+- Each run logs:
+  - Parameters: dataset_size, num_features, model_type, test_size, etc.
+  - Metrics: accuracy, per-class precision/recall/F1-score
+  - Artifacts: model, vectorizer, metrics.json, confusion_matrix.json
+
+**Usage:**
+```bash
+# Run training (automatically logs to MLflow)
+python src/training/train.py
+
+# View MLflow UI
+mlflow ui --backend-store-uri mlruns
+# Then open http://localhost:5000 in browser
+```
+
+**Benefits:**
+- Track all training experiments in one place
+- Compare model performance across runs
+- Reproduce any training run with logged parameters
+- Version control for models
+- Easy model retrieval for deployment
+
+**CI/CD Integration:**
+- MLflow tracking data (`mlruns/`) uploaded as artifact in CI pipeline
+- Preserves experiment history for dashboard visualization (see Stage 7)
 
 ## Stage 5: Inference
 
@@ -115,9 +146,23 @@ Deployment stages:
 
 **Status**: To be implemented
 
+**Note:** Dashboard/visualization requirements added in Commit 6 (MLflow Integration)
+
 Monitoring includes:
 - Model performance tracking
 - Data drift detection
 - Prediction logging
 - Alerting
+- **Frontend Dashboard** (planned):
+  - Experiment history visualization (all training runs)
+  - Model performance metrics over time
+  - Model comparison (accuracy, precision, recall across versions)
+  - Training parameters visualization
+  - Model version timeline
+  - Integration with MLflow tracking data
+
+**Implementation Options:**
+- Option A: Use MLflow's built-in UI (`mlflow ui`) - quick start
+- Option B: Build custom dashboard (React/Vue + FastAPI backend) - full control
+- Option C: Integrate MLflow UI into web interface - hybrid approach
 

@@ -41,12 +41,34 @@ The containerization ensures:
 ### 2. Model Registry
 
 Models are versioned and tracked using MLflow, which provides:
-- Model versioning
-- Experiment tracking
-- Model metadata storage
-- Model artifact storage
+- **Model versioning**: Each trained model is registered with a version number
+- **Experiment tracking**: All training runs are logged with parameters and metrics
+- **Model metadata storage**: Training parameters, dataset info, and model configuration
+- **Model artifact storage**: Models and related artifacts stored in MLflow
 
-**Location**: MLflow server (local or remote)
+**Implementation:**
+- MLflow tracking URI: `mlruns/` directory (local storage)
+- Experiment name: `sentiment-analysis`
+- Registered model: `SentimentAnalysisModel`
+- Each training run logs:
+  - Parameters: dataset size, model type, test size, random state
+  - Metrics: accuracy, precision, recall, F1-score per class
+  - Artifacts: model, vectorizer, metrics JSON, confusion matrix
+
+**Location**: `mlruns/` directory (local) or remote MLflow server
+
+**Usage:**
+```bash
+# View MLflow UI to see experiments and runs
+mlflow ui --backend-store-uri mlruns
+
+# Access at http://localhost:5000
+```
+
+**When expanding to a more robust production grade:**
+- Deploy MLflow server (remote tracking)
+- Use MLflow Model Registry for model promotion workflow
+- Integrate with CI/CD for automatic model registration
 
 ### 3. Inference API
 
