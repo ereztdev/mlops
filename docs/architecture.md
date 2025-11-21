@@ -80,6 +80,29 @@ The inference API serves trained models via a REST API:
 
 **Location**: `src/inference/`
 
+**Endpoints:**
+- `GET /` - Interactive web UI for sentiment analysis
+- `POST /predict` - Single text prediction
+- `POST /predict/batch` - Batch predictions
+- `GET /health` - Health check endpoint
+- `GET /docs` - Automatic API documentation (Swagger UI)
+
+**Features:**
+- Model loaded once at startup (cached in memory for performance)
+- Pydantic models for request/response validation
+- Automatic OpenAPI documentation
+- Web UI included for easy testing
+- Error handling for missing models or prediction failures
+
+**Usage:**
+```bash
+# Start API server
+python src/inference/app.py
+
+# Access web UI: http://localhost:8000
+# Access API docs: http://localhost:8000/docs
+```
+
 ### 4. CI/CD Pipeline
 
 GitHub Actions workflows automate:

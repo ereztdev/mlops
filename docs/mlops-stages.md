@@ -124,13 +124,47 @@ mlflow ui --backend-store-uri mlruns
 
 ## Stage 5: Inference
 
-**Status**: To be implemented
+**Status**: ✅ Implemented
 
 Inference capabilities:
-- REST API endpoints
-- Model loading
-- Request processing
-- Response generation
+- **REST API endpoints** (`src/inference/app.py`):
+  - `POST /predict` - Single text prediction
+  - `POST /predict/batch` - Batch predictions
+  - `GET /health` - Health check
+  - `GET /` - Interactive web UI
+  - `GET /docs` - Automatic API documentation (Swagger UI)
+- **Model loading** (`src/inference/load_model.py`):
+  - Loads trained model and vectorizer from disk
+  - Model cached in memory for fast predictions
+  - Error handling for missing model files
+- **Request processing**:
+  - Pydantic models for request/response validation
+  - Text preprocessing using trained vectorizer
+  - Sentiment prediction with confidence scores
+- **Response generation**:
+  - JSON responses with sentiment and confidence
+  - Web UI for interactive testing
+
+**Implementation Details:**
+- FastAPI framework for modern, fast API
+- Automatic OpenAPI/Swagger documentation
+- Model loaded once at startup (cached in memory)
+- Web UI included for easy testing and demos
+- Supports both single and batch predictions
+
+**Usage:**
+```bash
+# Start the API server
+python src/inference/app.py
+
+# Or in Docker
+docker run -p 8000:8000 -v $(pwd):/app mlops:latest python src/inference/app.py
+
+# Then access:
+# - Web UI: http://localhost:8000
+# - API Docs: http://localhost:8000/docs
+# - Health: http://localhost:8000/health
+```
 
 ## Stage 6: Deployment
 
