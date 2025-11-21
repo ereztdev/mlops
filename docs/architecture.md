@@ -14,6 +14,30 @@ The training pipeline is responsible for:
 
 **Location**: `src/training/`
 
+### 1.1 Training Container
+
+The training pipeline is containerized using Docker for consistent execution environments:
+
+- **Base Image**: Python 3.10-slim
+- **Dependencies**: Installed from `requirements.txt`
+- **Working Directory**: `/app` (project root)
+- **Execution**: Training script runs inside container
+
+**Usage:**
+```bash
+# Build the image
+docker build -t mlops:latest .
+
+# Run training in container
+docker run --rm -v $(pwd):/app mlops:latest python src/training/train.py
+```
+
+The containerization ensures:
+- Consistent Python and dependency versions across environments
+- Isolation from host system dependencies
+- Reproducible training runs
+- Easy deployment to different environments
+
 ### 2. Model Registry
 
 Models are versioned and tracked using MLflow, which provides:
