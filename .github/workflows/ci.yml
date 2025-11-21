@@ -97,15 +97,16 @@ jobs:
       run: |
         python src/training/train.py
     
-    # Upload model artifacts
-    # This saves the trained model files so they can be downloaded later
-    # Artifacts are stored for 90 days by default
+    # Upload model artifacts and metrics
+    # This saves the trained model files and metrics so they can be downloaded later
+    # Artifacts are stored for 7 days
     - name: Upload model artifacts
       uses: actions/upload-artifact@v4
       with:
         name: trained-model
         path: |
           models/*.pkl
+          models/metrics.json
         retention-days: 7
         if-no-files-found: warn
 

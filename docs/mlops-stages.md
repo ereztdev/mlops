@@ -59,13 +59,27 @@ The CI pipeline automates quality checks and training on every code change:
 
 ## Stage 3: Artifact Handling
 
-**Status**: To be implemented
+**Status**: ✅ Implemented
 
 Artifact handling includes:
-- Model serialization
-- Metrics storage
-- Version tracking
-- Artifact persistence
+- **Model serialization**: Models saved as `.pkl` files (pickle format)
+- **Metrics storage**: Evaluation metrics saved as `metrics.json` (JSON format)
+- **CI/CD artifact persistence**: Artifacts uploaded to GitHub Actions and stored for 7 days
+- **Artifact structure**:
+  - `models/sentiment_model.pkl` - Trained classifier
+  - `models/sentiment_model_vectorizer.pkl` - Fitted text vectorizer
+  - `models/metrics.json` - Evaluation metrics (accuracy, classification report, confusion matrix)
+
+**Implementation Details:**
+- Metrics include accuracy, precision, recall, F1-score per class
+- JSON format allows easy parsing by other tools
+- CI pipeline automatically uploads all artifacts after training
+- Artifacts can be downloaded from GitHub Actions workflow runs
+
+**Usage:**
+- Artifacts are automatically created during training
+- CI/CD automatically uploads artifacts for each training run
+- Download artifacts from GitHub Actions workflow run page
 
 ## Stage 4: Model Registry
 

@@ -6,6 +6,7 @@ It loads data, trains a classifier, evaluates performance, and saves
 the trained model for later use in inference.
 """
 
+import json
 import pickle
 import sys
 from pathlib import Path
@@ -184,6 +185,48 @@ def save_model(
     return model_path, vectorizer_path
 
 
+def save_metrics(
+    metrics: dict,
+    model_dir: Path,
+    metrics_name: str = "metrics"
+) -> Path:
+    """
+    Save evaluation metrics to a JSON file.
+    
+    This allows metrics to be easily read by other tools, CI/CD pipelines,
+    or for tracking model performance over time.
+    
+    Args:
+        metrics: Dictionary containing evaluation metrics
+        model_dir: Directory where metrics will be saved
+        metrics_name: Base name for the metrics file
+    
+    Returns:
+        Path to the saved metrics file
+    """
+    # Create model directory if it doesn't exist
+    model_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Define file path
+    metrics_path = model_dir / f"{metrics_name}.json"
+    
+    # Convert metrics to JSON-serializable format
+    # Some values might be numpy types that need conversion
+    json_metrics = {
+        "accuracy": float(metrics["accuracy"]),
+        "classification_report": metrics["classification_report"],
+        "confusion_matrix": metrics["confusion_matrix"]
+    }
+    
+    # Save metrics as JSON
+    with open(metrics_path, "w") as f:
+        json.dump(json_metrics, f, indent=2)
+    
+    print(f"Metrics saved to: {metrics_path}")
+    
+    return metrics_path
+
+
 def main() -> None:
     """
     Main training pipeline.
@@ -211,12 +254,13 @@ def main() -> None:
     print("\n[Step 3] Evaluating model...")
     metrics = evaluate_model(model, X_test, y_test)
     
-    # Step 4: Save model
-    print("\n[Step 4] Saving model...")
+    # Step 4: Save model and metrics
+    print("\n[Step 4] Saving artifacts...")
     # Create models directory in project root
     project_root = Path(__file__).parent.parent.parent
     model_dir = project_root / "models"
     model_path, vectorizer_path = save_model(model, vectorizer, model_dir)
+    metrics_path = save_metrics(metrics, model_dir)
     
     print("\n" + "=" * 50)
     print("Training pipeline complete!")
@@ -224,6 +268,7 @@ def main() -> None:
     print(f"\nModel artifacts saved:")
     print(f"  - Model: {model_path}")
     print(f"  - Vectorizer: {vectorizer_path}")
+    print(f"  - Metrics: {metrics_path}")
     print(f"\nModel accuracy: {metrics['accuracy']:.4f} ({metrics['accuracy'] * 100:.2f}%)")
 
 
