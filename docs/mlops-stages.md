@@ -4,13 +4,29 @@ This document outlines the different stages of the MLOps lifecycle as implemente
 
 ## Stage 1: Training
 
-**Status**: To be implemented
+**Status**: ✅ Implemented
 
 The training stage involves:
-- Data loading and preprocessing
-- Model training
-- Model evaluation
-- Saving model artifacts
+- Data loading and preprocessing (`src/data/load_data.py`)
+- Model training (`src/training/train.py`)
+- Model evaluation (accuracy, classification report, confusion matrix)
+- Saving model artifacts (model.pkl and vectorizer.pkl to `models/` directory)
+
+**Implementation Details:**
+- Uses scikit-learn's Multinomial Naive Bayes classifier for sentiment analysis
+- TF-IDF vectorization for text preprocessing
+- Train/test split (80/20) for model evaluation
+- Model and vectorizer saved as pickle files for inference
+- Comprehensive evaluation metrics printed during training
+
+**Usage:**
+```bash
+# Run training
+python src/training/train.py
+
+# Or in Docker
+docker run --rm -v $(pwd):/app mlops:latest python src/training/train.py
+```
 
 ## Stage 2: Automated CI Pipeline
 
