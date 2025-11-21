@@ -30,13 +30,32 @@ docker run --rm -v $(pwd):/app mlops:latest python src/training/train.py
 
 ## Stage 2: Automated CI Pipeline
 
-**Status**: To be implemented
+**Status**: ✅ Implemented
 
-The CI pipeline will:
-- Run tests on code changes
-- Execute training jobs
-- Validate model performance
-- Store artifacts
+The CI pipeline automates quality checks and training on every code change:
+
+**GitHub Actions Workflow** (`.github/workflows/ci.yml`):
+- **Lint and Test Job**: 
+  - Runs on every push and pull request
+  - Code linting with flake8 (style and error checking)
+  - Runs all tests with pytest
+  - Code coverage reporting
+- **Training Job**:
+  - Trains the model to ensure pipeline works
+  - Validates training script executes successfully
+  - Uploads model artifacts for download
+
+**Benefits:**
+- Automatic validation on every code change
+- Catches errors before they reach production
+- Ensures training pipeline remains functional
+- Model artifacts stored for 7 days
+
+**Usage:**
+- Automatically runs on push to `main` branch
+- Automatically runs on pull requests
+- View results in GitHub Actions tab
+- Download artifacts from workflow runs
 
 ## Stage 3: Artifact Handling
 
