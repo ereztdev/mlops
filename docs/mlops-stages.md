@@ -168,13 +168,38 @@ docker run -p 8000:8000 -v $(pwd):/app mlops:latest python src/inference/app.py
 
 ## Stage 6: Deployment
 
-**Status**: To be implemented
+**Status**: ✅ Partially Implemented (Staging)
 
-Deployment stages:
-- Staging environment
-- Production environment
-- Environment promotion
-- Rollback capabilities
+**Staging Deployment:**
+- **CI/CD Integration**: Automatic deployment job in GitHub Actions
+- **Docker Image**: Builds and pushes inference API to GitHub Container Registry (ghcr.io)
+- **Image Tags**: 
+  - `latest` - Latest version from main branch
+  - `main-<sha>` - Tagged with commit SHA for traceability
+- **Deployment Job**: Runs after successful lint/test and training
+- **Staging Environment**: Configured in GitHub Actions (placeholder URL)
+
+**Implementation Details:**
+- Uses Docker Buildx for efficient image builds
+- Pushes to `ghcr.io/ereztdev/mlops` (GitHub Container Registry)
+- Model artifacts downloaded from training job
+- Image cached for faster subsequent builds
+- Deployment step is a placeholder (ready for actual infrastructure)
+
+**Usage:**
+```bash
+# Pull and run the deployed image
+docker pull ghcr.io/ereztdev/mlops:latest
+docker run -p 8000:8000 ghcr.io/ereztdev/mlops:latest python src/inference/app.py
+```
+
+**Production Deployment:**
+- **Status**: To be implemented (Commit 9)
+- Will include:
+  - Production environment
+  - Manual approval gate
+  - Environment promotion workflow
+  - Rollback capabilities
 
 ## Stage 7: Monitoring
 

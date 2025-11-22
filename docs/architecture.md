@@ -113,6 +113,18 @@ GitHub Actions workflows automate:
 
 **Location**: `.github/workflows/`
 
+**Workflow Jobs:**
+1. **Lint and Test**: Code quality checks and test execution
+2. **Train Model**: Model training and artifact generation
+3. **Deploy to Staging**: Docker image build and push to GitHub Container Registry
+
+**Deployment:**
+- **Container Registry**: GitHub Container Registry (ghcr.io)
+- **Image Repository**: `ghcr.io/ereztdev/mlops`
+- **Tags**: `latest` and `main-<sha>` for versioning
+- **Staging Environment**: Configured in GitHub Actions
+- **Production**: Manual approval gate (Commit 9)
+
 ### 5. Containerization
 
 Docker containers provide:
