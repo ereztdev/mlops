@@ -116,14 +116,17 @@ GitHub Actions workflows automate:
 **Workflow Jobs:**
 1. **Lint and Test**: Code quality checks and test execution
 2. **Train Model**: Model training and artifact generation
-3. **Deploy to Staging**: Docker image build and push to GitHub Container Registry
+3. **Deploy to Staging**: Docker image build and push to GitHub Container Registry (automatic)
+4. **Deploy to Production**: Production deployment with manual approval gate
 
 **Deployment:**
 - **Container Registry**: GitHub Container Registry (ghcr.io)
 - **Image Repository**: `ghcr.io/ereztdev/mlops`
-- **Tags**: `latest` and `main-<sha>` for versioning
-- **Staging Environment**: Configured in GitHub Actions
-- **Production**: Manual approval gate (Commit 9)
+- **Staging Tags**: `latest` and `main-<sha>` for versioning
+- **Production Tags**: `production`, `production-<sha>`, `prod-<sha>`
+- **Staging Environment**: Automatic deployment after successful training
+- **Production Environment**: Manual approval required before deployment
+- **Promotion Workflow**: Staging → (manual approval) → Production
 
 ### 5. Containerization
 

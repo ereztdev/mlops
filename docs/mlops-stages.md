@@ -168,7 +168,7 @@ docker run -p 8000:8000 -v $(pwd):/app mlops:latest python src/inference/app.py
 
 ## Stage 6: Deployment
 
-**Status**: ✅ Partially Implemented (Staging)
+**Status**: ✅ Implemented (Staging + Production)
 
 **Staging Deployment:**
 - **CI/CD Integration**: Automatic deployment job in GitHub Actions
@@ -194,12 +194,31 @@ docker run -p 8000:8000 ghcr.io/ereztdev/mlops:latest python src/inference/app.p
 ```
 
 **Production Deployment:**
-- **Status**: To be implemented (Commit 9)
-- Will include:
-  - Production environment
-  - Manual approval gate
-  - Environment promotion workflow
-  - Rollback capabilities
+- **Status**: ✅ Implemented (Commit 9)
+- **Manual Approval Gate**: Production deployment requires manual approval in GitHub Actions
+- **Environment Promotion**: Automatic promotion from staging to production after approval
+- **Production Image Tags**: 
+  - `production` - Latest production version
+  - `production-<sha>` - Tagged with commit SHA
+  - `prod-<sha>` - Alternative tag format
+- **Deployment Workflow**:
+  1. Code pushed to main → Staging deploys automatically
+  2. Staging deployment succeeds → Production job waits for approval
+  3. Manual approval in GitHub Actions UI → Production deploys
+  4. Production deployment completes → Service available
+
+**How to Approve Production Deployment:**
+1. Go to GitHub Actions tab in repository
+2. Find the workflow run that completed staging
+3. Click on "Deploy to Production" job
+4. Click "Review deployments" button
+5. Approve the deployment
+6. Production deployment will proceed automatically
+
+**Rollback Capabilities:**
+- Previous production images remain in registry
+- Can redeploy previous version by pulling older image tag
+- When expanding to a more robust production grade, add automated rollback on health check failures
 
 ## Stage 7: Monitoring
 
