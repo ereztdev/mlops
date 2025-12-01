@@ -222,24 +222,57 @@ docker run -p 8000:8000 ghcr.io/ereztdev/mlops:latest python src/inference/app.p
 
 ## Stage 7: Monitoring
 
-**Status**: To be implemented
+**Status**: ✅ Partially Implemented (Scaffold)
 
 **Note:** Dashboard/visualization requirements added in Commit 6 (MLflow Integration)
 
-Monitoring includes:
-- Model performance tracking
-- Data drift detection
-- Prediction logging
-- Alerting
-- **Frontend Dashboard** (planned):
-  - Experiment history visualization (all training runs)
-  - Model performance metrics over time
-  - Model comparison (accuracy, precision, recall across versions)
-  - Training parameters visualization
-  - Model version timeline
-  - Integration with MLflow tracking data
+**Implemented Components:**
+- **Prediction Logging** (`src/monitoring/collector.py`):
+  - Logs all predictions to `logs/predictions.jsonl` (JSON Lines format)
+  - Tracks: text, prediction, confidence, timestamp, model version
+  - Integrated into inference API (automatic logging on every prediction)
+- **Prediction Statistics**:
+  - Get recent predictions and statistics via collector
+  - Health endpoint includes monitoring stats
+  - Tracks: total predictions, sentiment distribution, confidence metrics
+- **Drift Detection Scaffold**:
+  - Placeholder function for drift detection
+  - Simple confidence-based detection (placeholder)
+  - Ready for production-grade implementation
 
-**Implementation Options:**
+**Implementation Details:**
+- `PredictionCollector` class for logging and statistics
+- Automatic logging in `/predict` and `/predict/batch` endpoints
+- Logs stored in `logs/predictions.jsonl` (JSON Lines format)
+- Health endpoint (`/health`) includes monitoring statistics
+- Drift detection function ready for enhancement
+
+**Usage:**
+```python
+from src.monitoring.collector import PredictionCollector, detect_drift
+
+# Get statistics
+collector = PredictionCollector()
+stats = collector.get_prediction_stats()
+print(stats)
+
+# Get recent predictions
+recent = collector.get_recent_predictions(limit=100)
+
+# Detect drift (placeholder)
+drift_result = detect_drift(recent)
+```
+
+**Frontend Dashboard** (planned for future):
+- Experiment history visualization (all training runs)
+- Model performance metrics over time
+- Model comparison (accuracy, precision, recall across versions)
+- Training parameters visualization
+- Model version timeline
+- Integration with MLflow tracking data
+- Real-time prediction monitoring
+
+**Implementation Options for Dashboard:**
 - Option A: Use MLflow's built-in UI (`mlflow ui`) - quick start
 - Option B: Build custom dashboard (React/Vue + FastAPI backend) - full control
 - Option C: Integrate MLflow UI into web interface - hybrid approach

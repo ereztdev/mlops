@@ -138,6 +138,22 @@ Docker containers provide:
 
 **Location**: `Dockerfile`, `docker-compose.yml` (future)
 
+### 6. Monitoring
+
+Monitoring system tracks model performance and detects data drift:
+
+- **Prediction Logging**: All predictions logged to `logs/predictions.jsonl`
+- **Statistics Collection**: Tracks prediction counts, sentiment distribution, confidence metrics
+- **Drift Detection**: Placeholder for detecting data/model drift (ready for production implementation)
+- **Health Monitoring**: Health endpoint includes monitoring statistics
+
+**Location**: `src/monitoring/`
+
+**Integration:**
+- Automatically logs all predictions from inference API
+- Statistics available via health endpoint
+- Logs stored in JSON Lines format for easy analysis
+
 ## Data Flow
 
 ```

@@ -18,6 +18,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.inference.load_model import load_model_and_vectorizer, predict_sentiment
+from src.monitoring.collector import PredictionCollector
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -29,6 +30,7 @@ app = FastAPI(
 # Global variables to cache loaded model (loaded once at startup)
 _model = None
 _vectorizer = None
+_collector = None
 
 
 # Request/Response models using Pydantic for validation
@@ -62,11 +64,15 @@ async def load_model():
     This runs once when the server starts, not on every request.
     This is more efficient than loading the model for each prediction.
     """
-    global _model, _vectorizer
+    global _model, _vectorizer, _collector
     try:
         print("Loading model and vectorizer...")
         _model, _vectorizer = load_model_and_vectorizer()
         print("Model loaded successfully!")
+        
+        # Initialize prediction collector for monitoring
+        _collector = PredictionCollector()
+        print("Monitoring collector initialized!")
     except FileNotFoundError as e:
         print(f"Error loading model: {e}")
         print("Please train a model first: python src/training/train.py")
@@ -256,10 +262,19 @@ async def health_check():
     if _model is None or _vectorizer is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
     
+    # Get monitoring stats if collector is available
+    monitoring_stats = None
+    if _collector is not None:
+        monitoring_stats = _collector.get_prediction_stats()
+    
     return {
         "status": "healthy",
         "model_loaded": True,
-        "message": "API is ready to serve predictions"
+        "message": "API is ready to serve predictions",
+        "monitoring": {
+            "enabled": _collector is not None,
+            "stats": monitoring_stats
+        }
     }
 
 
@@ -295,6 +310,16 @@ async def predict(request: PredictionRequest):
     
     try:
         sentiment, confidence = predict_sentiment(request.text, _model, _vectorizer)
+        
+        # Log prediction for monitoring
+        if _collector is not None:
+            _collector.log_prediction(
+                text=request.text,
+                prediction=sentiment,
+                confidence=confidence,
+                model_version="latest"  # Could be retrieved from MLflow or config
+            )
+        
         return PredictionResponse(
             text=request.text,
             sentiment=sentiment,
@@ -333,6 +358,16 @@ async def predict_batch(request: BatchPredictionRequest):
         predictions = []
         for text in request.texts:
             sentiment, confidence = predict_sentiment(text, _model, _vectorizer)
+            
+            # Log each prediction for monitoring
+            if _collector is not None:
+                _collector.log_prediction(
+                    text=text,
+                    prediction=sentiment,
+                    confidence=confidence,
+                    model_version="latest"
+                )
+            
             predictions.append(
                 PredictionResponse(
                     text=text,
