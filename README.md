@@ -1,4 +1,5 @@
-# MLOps Project
+# FlowForge 
+### an MLOps Project
 
 A production-ready MLOps pipeline demonstrating best practices for machine learning operations, from training to deployment and monitoring.
 
